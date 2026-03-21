@@ -1,0 +1,35 @@
+# Known-good PID gains for the real Crazyflie
+# These are the "good gains" from last semester's tuning.
+# Students: copy this file to pid_student.yaml and edit your gains there.
+
+goal_controller:
+  ros__parameters:
+    tf_world_frame: "map"
+    tf_robot_frame: "crazyflie/base_footprint"
+    control_rate: 10.0
+    position_tolerance: 0.01
+    yaw_tolerance: 0.01
+
+    pid_x.kp: 2.5
+    pid_x.ki: 0.0
+    pid_x.kd: 0.05
+    pid_x.min_output: -0.707
+    pid_x.max_output: 0.707
+
+    pid_y.kp: 2.5
+    pid_y.ki: 0.0
+    pid_y.kd: 0.05
+    pid_y.min_output: -0.707
+    pid_y.max_output: 0.707
+
+    pid_z.kp: 2.5
+    pid_z.ki: 0.01
+    pid_z.kd: 0.05
+    pid_z.min_output: -0.4
+    pid_z.max_output: 0.4
+
+    pid_yaw.kp: 1.0
+    pid_yaw.ki: 0.0
+    pid_yaw.kd: 0.05
+    pid_yaw.min_output: -1.0
+    pid_yaw.max_output: 1.0

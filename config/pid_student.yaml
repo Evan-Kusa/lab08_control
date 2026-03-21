@@ -1,0 +1,37 @@
+# =============================================================================
+# Lab 08 - Student PID Gains
+# =============================================================================
+# Enter your PID gains from Lab 07 (simulation) below.
+# These will be loaded by the goal controller at startup.
+#
+# Each axis (X, Y, Z) has:
+#   kp  - Proportional gain
+#   ki  - Integral gain
+#   kd  - Derivative gain
+#   min_output / max_output - Output clamp (leave as-is unless instructed)
+#
+# Usage:
+#   ros2 launch lab08_control lab08.launch.py pid_file:=pid_student.yaml
+# =============================================================================
+
+goal_controller:
+  ros__parameters:
+    # --- X axis ---
+    pid_x.kp: 0.0
+    pid_x.ki: 0.0
+    pid_x.kd: 0.0
+
+    # --- Y axis ---
+    pid_y.kp: 0.0
+    pid_y.ki: 0.0
+    pid_y.kd: 0.0
+
+    # --- Z axis ---
+    pid_z.kp: 0.0
+    pid_z.ki: 0.0
+    pid_z.kd: 0.0
+
+    # --- Yaw (do not change) ---
+    pid_yaw.kp: 1.0
+    pid_yaw.ki: 0.0
+    pid_yaw.kd: 0.05

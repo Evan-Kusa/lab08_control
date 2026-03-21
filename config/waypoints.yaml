@@ -1,0 +1,19 @@
+# Lab 08 course waypoints: [x, y, z, yaw]
+# These define the physical course the drone must fly through.
+# Units: meters and radians.
+
+waypoints:
+  - [0.0,    0.0,    0.3,  0.0]    # Start / takeoff
+  - [0.5588, 0.0,    0.3,  0.0]    # Gate 1
+  - [0.5588, 0.8128, 0.33, 0.0]    # Gate 2
+  - [0.0,    0.8128, 0.33, 0.0]    # Turn
+  - [0.0,   -0.71,   0.33, 0.0]    # Transition
+  - [-1.40, -0.71,   0.33, 0.0]    # Gate 3
+  - [-1.40, -0.25,   0.33, 0.0]    # Turn
+  - [-0.81, -0.25,   0.33, 0.0]    # Approach climb point
+  - [-0.81, -0.25,   1.0,  0.0]    # Climb
+  - [-0.81, -0.95,   1.0,  0.0]    # High gate
+  - [0.0,   -0.95,   1.0,  0.0]    # Return high
+  - [0.0,    0.0,    1.0,  0.0]    # Above start
+  - [0.0,    0.0,    0.3,  0.0]    # Descend
+  - [0.0,    0.0,   -0.05, 0.0]    # Land
