@@ -123,6 +123,7 @@ class GoalController(Node):
         # --- State ---
         self.goal_pose = None
         self.last_time = self.get_clock().now()
+        self._last_tf_warning_time = None
 
         # --- Runtime parameter updates ---
         self.add_on_set_parameters_callback(self._on_parameter_change)
@@ -156,6 +157,19 @@ class GoalController(Node):
                 f"out=[{pid.min_output}, {pid.max_output}]"
             )
 
+    @staticmethod
+    def _poses_match(lhs, rhs, tol=1e-6):
+        """Treat repeated publications of the same goal as one target."""
+        return (
+            math.isclose(lhs.position.x, rhs.position.x, abs_tol=tol) and
+            math.isclose(lhs.position.y, rhs.position.y, abs_tol=tol) and
+            math.isclose(lhs.position.z, rhs.position.z, abs_tol=tol) and
+            math.isclose(lhs.orientation.x, rhs.orientation.x, abs_tol=tol) and
+            math.isclose(lhs.orientation.y, rhs.orientation.y, abs_tol=tol) and
+            math.isclose(lhs.orientation.z, rhs.orientation.z, abs_tol=tol) and
+            math.isclose(lhs.orientation.w, rhs.orientation.w, abs_tol=tol)
+        )
+
     def _on_parameter_change(self, params):
         """Handle runtime parameter updates (e.g., from ros2 param set)."""
         changed = []
@@ -183,11 +197,16 @@ class GoalController(Node):
     # --- Callbacks ---
 
     def goal_callback(self, msg: PoseStamped):
+        is_new_goal = self.goal_pose is None or not self._poses_match(self.goal_pose, msg.pose)
         self.goal_pose = msg.pose
+        if not is_new_goal:
+            return
+
         self.pid_x.reset()
         self.pid_y.reset()
         self.pid_z.reset()
         self.pid_yaw.reset()
+        self.last_time = self.get_clock().now()
         self.get_logger().info(
             f"New goal: x={msg.pose.position.x:.2f}, "
             f"y={msg.pose.position.y:.2f}, z={msg.pose.position.z:.2f}"
@@ -203,14 +222,18 @@ class GoalController(Node):
                 self.tf_world_frame, self.tf_robot_frame, rclpy.time.Time()
             )
         except (LookupException, ConnectivityException, ExtrapolationException) as e:
-            self.get_logger().warn(f"TF lookup failed: {e}", throttle_duration_sec=2.0)
+            now = self.get_clock().now()
+            if (self._last_tf_warning_time is None or
+                    (now - self._last_tf_warning_time).nanoseconds >= 2_000_000_000):
+                self.get_logger().warning(f"TF lookup failed: {e}")
+                self._last_tf_warning_time = now
             return
 
         # Compute dt
         now = self.get_clock().now()
         dt = (now - self.last_time).nanoseconds / 1e9
         self.last_time = now
-        if dt == 0:
+        if dt <= 0.0:
             return
 
         # Extract current pose

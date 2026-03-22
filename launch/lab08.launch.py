@@ -13,6 +13,9 @@ Usage:
 
     # With custom waypoints:
     ros2 launch lab08_control lab08.launch.py waypoints_file:=/path/to/waypoints.yaml
+
+    # With a custom TF base frame:
+    ros2 launch lab08_control lab08.launch.py robot_base_frame:=<tf_frame>
 """
 
 import os
@@ -40,6 +43,12 @@ def generate_launch_description():
         description='Path to waypoints YAML file'
     )
 
+    robot_base_frame_arg = DeclareLaunchArgument(
+        'robot_base_frame',
+        default_value='crazyflie/base_footprint',
+        description='TF base frame used by the mission logger and plotter'
+    )
+
     # --- Nodes ---
     goal_controller = Node(
         package='lab08_control',
@@ -55,6 +64,7 @@ def generate_launch_description():
         name='mission_controller',
         parameters=[{
             'waypoints_file': LaunchConfiguration('waypoints_file'),
+            'robot_base_frame': LaunchConfiguration('robot_base_frame'),
         }],
         output='screen',
     )
@@ -63,12 +73,16 @@ def generate_launch_description():
         package='lab08_control',
         executable='plotter',
         name='trajectory_plotter',
+        parameters=[{
+            'source_frame': LaunchConfiguration('robot_base_frame'),
+        }],
         output='screen',
     )
 
     return LaunchDescription([
         pid_file_arg,
         waypoints_file_arg,
+        robot_base_frame_arg,
         goal_controller,
         trajectory_publisher,
         plotter,

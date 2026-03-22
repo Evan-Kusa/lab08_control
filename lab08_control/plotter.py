@@ -6,15 +6,16 @@ Run alongside the controller and trajectory publisher to independently
 log and plot the drone's tracking performance.
 
 Subscribes: /goal_pose (PoseStamped)
-Uses TF:    map -> crazyflie_real (configurable)
+Uses TF:    map -> crazyflie/base_footprint (configurable)
 
 On Ctrl+C saves:
   - CSV:  trajectory_log.csv
-  - Plot: traj_xyz_timeplots.png
-  - Plot: traj_xy_traj.png
+  - Plot: traj_xyz_time.png
+  - Plot: traj_xy_path.png
 """
 
 import atexit
+import os
 import numpy as np
 import rclpy
 from rclpy.node import Node
@@ -35,7 +36,7 @@ class SimplePlotter(Node):
         # --- Parameters ---
         self.declare_parameter('goal_topic', '/goal_pose')
         self.declare_parameter('target_frame', 'map')
-        self.declare_parameter('source_frame', 'crazyflie_real')
+        self.declare_parameter('source_frame', 'crazyflie/base_footprint')
         self.declare_parameter('sample_hz', 20.0)
         self.declare_parameter('tf_timeout_sec', 0.10)
         self.declare_parameter('csv_path', 'trajectory_log.csv')
@@ -61,10 +62,11 @@ class SimplePlotter(Node):
         self.t0 = self.get_clock().now()
         self.t, self.x, self.y, self.z = [], [], [], []
         self.gx, self.gy, self.gz = [], [], []
+        self._is_finalized = False
 
         # --- Timer ---
         self.create_timer(1.0 / max(self.sample_hz, 1.0), self._sample_once)
-        atexit.register(self._finalize)
+        atexit.register(self._finalize_safe)
 
         self.get_logger().info(
             f"Plotter: {self.goal_topic} | TF: {self.target_frame} <- {self.source_frame} | "
@@ -102,14 +104,15 @@ class SimplePlotter(Node):
         self.gx.append(gx); self.gy.append(gy); self.gz.append(gz)
 
     def _finalize(self):
-        if not self.t:
+        if self._is_finalized or not self.t:
             return
+        self._is_finalized = True
 
         # --- CSV ---
         arr = np.column_stack([self.t, self.x, self.y, self.z, self.gx, self.gy, self.gz])
         np.savetxt(self.csv_path, arr, delimiter=",",
                    header="time_s,x,y,z,gx,gy,gz", comments="")
-        self.get_logger().info(f"Saved CSV: {self.csv_path} ({arr.shape[0]} samples)")
+        self._safe_log(f"Saved CSV: {os.path.abspath(self.csv_path)} ({arr.shape[0]} samples)")
 
         if not self.save_figs:
             return
@@ -127,9 +130,9 @@ class SimplePlotter(Node):
         for ax in (ax1, ax2, ax3):
             ax.legend(); ax.grid(True)
         fig1.tight_layout()
-        f1 = f"{self.fig_prefix}_xyz_timeplots.png"
+        f1 = f"{self.fig_prefix}_xyz_time.png"
         fig1.savefig(f1, dpi=150); plt.close(fig1)
-        self.get_logger().info(f"Saved plot: {f1}")
+        self._safe_log(f"Saved plot: {os.path.abspath(f1)}")
 
         # --- XY path ---
         xy = np.column_stack([self.x, self.y])
@@ -148,9 +151,24 @@ class SimplePlotter(Node):
         ax.set_aspect('equal'); ax.set_xlabel("x [m]"); ax.set_ylabel("y [m]")
         ax.grid(True, alpha=0.3); ax.legend()
         fig2.tight_layout()
-        f2 = f"{self.fig_prefix}_xy_traj.png"
+        f2 = f"{self.fig_prefix}_xy_path.png"
         fig2.savefig(f2, dpi=150); plt.close(fig2)
-        self.get_logger().info(f"Saved plot: {f2}")
+        self._safe_log(f"Saved plot: {os.path.abspath(f2)}")
+
+    def _safe_log(self, msg, level="info"):
+        try:
+            if rclpy.ok():
+                getattr(self.get_logger(), level)(msg)
+            else:
+                print(msg)
+        except Exception:
+            print(msg)
+
+    def _finalize_safe(self):
+        try:
+            self._finalize()
+        except Exception as e:
+            print(f"Exception during finalize: {e}")
 
 
 def main(args=None):

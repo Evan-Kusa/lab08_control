@@ -16,7 +16,12 @@ setup(
         # Install launch files
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'matplotlib',
+        'numpy',
+        'PyYAML',
+    ],
     zip_safe=True,
     maintainer='Eric Keetz',
     maintainer_email='eck27@psu.edu',

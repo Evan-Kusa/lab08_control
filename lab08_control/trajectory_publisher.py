@@ -68,7 +68,7 @@ class MissionControllerAndLogger(Node):
         self.declare_parameter('goal_tolerance_z', 0.05)
         self.declare_parameter('goal_tolerance_yaw', 0.1)
         self.declare_parameter('robot_world_frame', 'map')
-        self.declare_parameter('robot_base_frame', 'crazyflie_real')
+        self.declare_parameter('robot_base_frame', 'crazyflie/base_footprint')
         self.declare_parameter('sample_hz', 20.0)
         self.declare_parameter('csv_filename', 'trajectory_log.csv')
         self.declare_parameter('plot_filename_prefix', 'traj')
@@ -93,7 +93,7 @@ class MissionControllerAndLogger(Node):
                 self.get_logger().info(f"Loaded {len(self.pose_sequence)} waypoints from {waypoints_file}")
             except Exception as e:
                 self.get_logger().error(f"Failed to load waypoints from '{waypoints_file}': {e}")
-                self.get_logger().warn("Using default waypoints.")
+                self.get_logger().warning("Using default waypoints.")
                 self.pose_sequence = self._default_waypoints()
         else:
             self.get_logger().info("No waypoints_file specified, using defaults.")
@@ -163,7 +163,7 @@ class MissionControllerAndLogger(Node):
 
         x, y, z, yaw = self.pose_sequence[self.current_goal_index]
         self.active_goal = (x, y, z, yaw)
-        self.goal_start_time = time.time()
+        self.goal_start_time = time.monotonic()
 
         goal_msg = self._create_goal_message(x, y, z, yaw)
         self.goal_publisher.publish(goal_msg)
@@ -227,7 +227,7 @@ class MissionControllerAndLogger(Node):
             if self._is_goal_reached(pos, current_yaw):
                 self._safe_log("Goal reached. Advancing.")
                 self.publish_next_goal()
-            elif time.time() - self.goal_start_time > self.goal_timeout:
+            elif time.monotonic() - self.goal_start_time > self.goal_timeout:
                 self.get_logger().warning("Goal timeout. Advancing.")
                 self.publish_next_goal()
 

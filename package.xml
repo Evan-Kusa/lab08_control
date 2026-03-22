@@ -13,6 +13,12 @@
   <depend>nav_msgs</depend>
   <depend>tf2_ros</depend>
   <depend>tf_transformations</depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
 
   <buildtool_depend>ament_python</buildtool_depend>
 
