@@ -1,0 +1,16 @@
+# Per-student PID gains for goal_controller
+# Copy this file to student_gains.yaml and fill in student values.
+# Usage: ros2 launch lab08_control lab08.launch.py student:=1
+#
+# Note: student_gains.yaml is gitignored (contains student names).
+
+students:
+  1:  # Student A
+    pid_x: {kp: 1.0, kd: 0.1, ki: 0.0}
+    pid_y: {kp: 1.0, kd: 0.1, ki: 0.0}
+  2:  # Student B
+    pid_x: {kp: 2.0, kd: 0.2, ki: 0.0}
+    pid_y: {kp: 2.0, kd: 0.2, ki: 0.0}
+  3:  # Student C
+    pid_x: {kp: 0.8, kd: 0.15, ki: 0.001}
+    pid_y: {kp: 0.8, kd: 0.15, ki: 0.001}
