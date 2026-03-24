@@ -1,5 +1,5 @@
 # Lab 08 course waypoints: [x, y, z, yaw]
-# These define the physical course the drone must fly through.
+# Last waypoint triggers landing via the land service.
 # Units: meters and radians.
 
 waypoints:
@@ -16,4 +16,3 @@ waypoints:
   - [0.0,   -0.95,   1.0,  0.0]    # Return high
   - [0.0,    0.0,    1.0,  0.0]    # Above start
   - [0.0,    0.0,    0.3,  0.0]    # Descend
-  - [0.0,    0.0,   -0.05, 0.0]    # Land

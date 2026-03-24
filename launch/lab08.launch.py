@@ -45,8 +45,14 @@ def generate_launch_description():
 
     robot_base_frame_arg = DeclareLaunchArgument(
         'robot_base_frame',
-        default_value='crazyflie/base_footprint',
+        default_value='crazyflie_real',
         description='TF base frame used by the mission logger and plotter'
+    )
+
+    robot_world_frame_arg = DeclareLaunchArgument(
+        'robot_world_frame',
+        default_value='crazyflie_real/odom',
+        description='TF world frame'
     )
 
     # --- Nodes ---
@@ -65,6 +71,7 @@ def generate_launch_description():
         parameters=[{
             'waypoints_file': LaunchConfiguration('waypoints_file'),
             'robot_base_frame': LaunchConfiguration('robot_base_frame'),
+            'robot_world_frame': LaunchConfiguration('robot_world_frame'),
         }],
         output='screen',
     )
@@ -75,6 +82,7 @@ def generate_launch_description():
         name='trajectory_plotter',
         parameters=[{
             'source_frame': LaunchConfiguration('robot_base_frame'),
+            'target_frame': LaunchConfiguration('robot_world_frame'),
         }],
         output='screen',
     )
@@ -83,6 +91,7 @@ def generate_launch_description():
         pid_file_arg,
         waypoints_file_arg,
         robot_base_frame_arg,
+        robot_world_frame_arg,
         goal_controller,
         trajectory_publisher,
         plotter,

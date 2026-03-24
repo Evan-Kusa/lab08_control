@@ -1,13 +1,13 @@
 # Known-good PID gains for the real Crazyflie
-# These are the "good gains" from last semester's tuning.
-# Students: copy this file to pid_student.yaml and edit your gains there.
+# Publishes Hover directly to the crazyflie server (bypasses vel_mux)
 
 goal_controller:
   ros__parameters:
-    tf_world_frame: "map"
-    tf_robot_frame: "crazyflie/base_footprint"
+    tf_world_frame: "crazyflie_real/odom"
+    tf_robot_frame: "crazyflie_real"
+    cmd_topic: "/crazyflie_real/cmd_hover"
     control_rate: 10.0
-    position_tolerance: 0.01
+    position_tolerance: 0.05
     yaw_tolerance: 0.01
 
     pid_x.kp: 2.5

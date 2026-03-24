@@ -1,0 +1,37 @@
+# Student PID gains for goal_controller
+# Usage: ros2 run lab08_control goal_controller --ros-args -p student:=1
+
+students:
+  1:  # Linden Ambrose
+    pid_x: {kp: 1.1, kd: 0.6, ki: 0.002}
+    pid_y: {kp: 1.1, kd: 0.6, ki: 0.002}
+  2:  # Lauren Kenselaar
+    pid_x: {kp: 2.5, kd: 0.12, ki: 0.0}
+    pid_y: {kp: 2.5, kd: 0.12, ki: 0.0}
+  3:  # Cortner Crumlish
+    pid_x: {kp: 0.7, kd: 0.05, ki: 0.0}
+    pid_y: {kp: 0.7, kd: 0.05, ki: 0.0}
+  4:  # Ethan Fernandez
+    pid_x: {kp: 1.2, kd: 0.15, ki: 0.0}
+    pid_y: {kp: 1.2, kd: 0.15, ki: 0.0}
+  5:  # Rodrigo
+    pid_x: {kp: 0.6, kd: 0.3, ki: 0.0}
+    pid_y: {kp: 0.6, kd: 0.3, ki: 0.0}
+  6:  # Henry Bao
+    pid_x: {kp: 0.9, kd: 0.18, ki: 0.0}
+    pid_y: {kp: 0.9, kd: 0.18, ki: 0.0}
+  7:  # Caroline Farmer
+    pid_x: {kp: 1.71, kd: 0.16, ki: 0.0}
+    pid_y: {kp: 1.71, kd: 0.16, ki: 0.0}
+  8:  # Aizzat Chaudhary
+    pid_x: {kp: 1.6, kd: 0.12, ki: 0.0}
+    pid_y: {kp: 1.6, kd: 0.12, ki: 0.0}
+  9:  # John Hu
+    pid_x: {kp: 0.9, kd: 0.12, ki: 0.0}
+    pid_y: {kp: 0.9, kd: 0.12, ki: 0.0}
+  10: # Teresa Liang
+    pid_x: {kp: 0.8, kd: 0.2, ki: 0.0}
+    pid_y: {kp: 0.8, kd: 0.2, ki: 0.0}
+  11: # Josh Guthrie
+    pid_x: {kp: 1.1, kd: 0.22, ki: 0.0}
+    pid_y: {kp: 1.1, kd: 0.22, ki: 0.0}

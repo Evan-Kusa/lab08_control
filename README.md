@@ -4,9 +4,51 @@ ROS 2 (Jazzy) package for Lab 08: flying a real Crazyflie drone through a waypoi
 
 ## Prerequisites
 
-- ROS 2 Jazzy
+- Docker (recommended) **or** ROS 2 Jazzy installed natively
 - [crazyswarm2](https://github.com/IMRCLab/crazyswarm2) installed and configured for your Crazyflie
+- Crazyradio PA USB dongle
 - Python packages: `numpy`, `matplotlib`, `pyyaml`, `tf_transformations`
+
+## Quick Start (Docker)
+
+The easiest way to run this package is with the pre-built Docker image, which includes ROS 2 Jazzy, crazyswarm2, and this package.
+
+```bash
+# 1. Build the base image (one-time)
+cd ros2-docker-images/base_images
+docker build -f Dockerfile.base-core -t base-core:latest .
+
+# 2. Build the Crazyflie real-drone image (one-time)
+cd ros2-docker-images/crazyflie
+docker build -f Dockerfile.crazyflie-real -t crazyflie-real:latest .
+
+# 3. Run the container (plug in Crazyradio first)
+docker run -it --rm --privileged \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v /dev/bus/usb:/dev/bus/usb \
+    crazyflie-real:latest
+```
+
+Inside the container, use the aliases:
+- `cf-scan` — Scan for nearby Crazyflies
+- `lab08` — Launch with default (instructor) PID gains
+- `lab08-student` — Launch with student PID gains
+
+To edit student gains inside the container:
+```bash
+nano /opt/lab08_ws/src/lab08_control/config/pid_student.yaml
+```
+
+Or mount your own gains file:
+```bash
+docker run -it --rm --privileged \
+    -e DISPLAY=$DISPLAY \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v /dev/bus/usb:/dev/bus/usb \
+    -v ./pid_student.yaml:/opt/lab08_ws/src/lab08_control/config/pid_student.yaml \
+    crazyflie-real:latest
+```
 
 ## Package Structure
 
@@ -28,7 +70,9 @@ lab08_control/
 └── setup.cfg
 ```
 
-## Setup
+## Setup (Native — without Docker)
+
+If not using Docker, clone and build manually:
 
 ```bash
 # Clone into your ROS 2 workspace

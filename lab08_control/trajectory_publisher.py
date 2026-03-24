@@ -22,6 +22,7 @@ from rclpy.node import Node
 from rclpy.duration import Duration
 from geometry_msgs.msg import PoseStamped, Quaternion
 from std_msgs.msg import Float32
+from crazyflie_interfaces.srv import Land
 from tf2_ros import Buffer, TransformListener, TransformException
 from tf_transformations import quaternion_from_euler, euler_from_quaternion
 import matplotlib.ticker as mticker
@@ -67,12 +68,14 @@ class MissionControllerAndLogger(Node):
         self.declare_parameter('goal_tolerance_xy', 0.05)
         self.declare_parameter('goal_tolerance_z', 0.05)
         self.declare_parameter('goal_tolerance_yaw', 0.1)
-        self.declare_parameter('robot_world_frame', 'map')
-        self.declare_parameter('robot_base_frame', 'crazyflie/base_footprint')
+        self.declare_parameter('robot_world_frame', 'crazyflie_real/odom')
+        self.declare_parameter('robot_base_frame', 'crazyflie_real')
         self.declare_parameter('sample_hz', 20.0)
         self.declare_parameter('csv_filename', 'trajectory_log.csv')
         self.declare_parameter('plot_filename_prefix', 'traj')
         self.declare_parameter('waypoints_file', '')
+        self.declare_parameter('student', 0)
+        self.declare_parameter('robot_prefix', 'crazyflie_real')
 
         self.publish_rate = float(self.get_parameter('publish_rate').value)
         self.goal_timeout = float(self.get_parameter('goal_timeout').value)
@@ -82,8 +85,16 @@ class MissionControllerAndLogger(Node):
         self.robot_world_frame = self.get_parameter('robot_world_frame').value
         self.robot_base_frame = self.get_parameter('robot_base_frame').value
         self.sample_hz = float(self.get_parameter('sample_hz').value)
-        self.csv_filename = self.get_parameter('csv_filename').value
-        self.plot_filename_prefix = self.get_parameter('plot_filename_prefix').value
+        student_id = int(self.get_parameter('student').value)
+        csv_base = self.get_parameter('csv_filename').value
+        plot_base = self.get_parameter('plot_filename_prefix').value
+        if student_id > 0:
+            name, ext = os.path.splitext(csv_base)
+            self.csv_filename = f"{name}_student{student_id}{ext}"
+            self.plot_filename_prefix = f"{plot_base}_student{student_id}"
+        else:
+            self.csv_filename = csv_base
+            self.plot_filename_prefix = plot_base
         waypoints_file = self.get_parameter('waypoints_file').value
 
         # --- Load waypoints ---
@@ -102,6 +113,10 @@ class MissionControllerAndLogger(Node):
         # --- Publishers ---
         self.goal_publisher = self.create_publisher(PoseStamped, '/goal_pose', 10)
         self.hover_publisher = self.create_publisher(Float32, '/hover_height', 10)
+
+        # --- Land service ---
+        robot_prefix = self.get_parameter('robot_prefix').value
+        self.land_client = self.create_client(Land, f'/{robot_prefix}/land')
 
         # --- TF ---
         self.tf_buffer = Buffer()
@@ -149,16 +164,19 @@ class MissionControllerAndLogger(Node):
             (0.0, -0.95, 1.0, 0.0),
             (0.0, 0.0, 1.0, 0.0),
             (0.0, 0.0, 0.3, 0.0),
-            (0.0, 0.0, -0.05, 0.0),
         ]
 
     # --- Goal publishing ---
 
     def publish_next_goal(self):
         if self.current_goal_index >= len(self.pose_sequence):
-            self._safe_log("All waypoints completed.")
+            self._safe_log("All waypoints completed. Landing...")
             self.active_goal = None
-            self._start_shutdown()
+            req = Land.Request()
+            req.height = 0.05
+            req.duration = rclpy.duration.Duration(seconds=3.0).to_msg()
+            self.land_client.call_async(req)
+            self.create_timer(4.0, self._start_shutdown)
             return
 
         x, y, z, yaw = self.pose_sequence[self.current_goal_index]
